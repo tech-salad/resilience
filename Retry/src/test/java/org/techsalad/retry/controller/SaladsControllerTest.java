@@ -23,9 +23,10 @@ import io.github.resilience4j.retry.autoconfigure.RetryAutoConfiguration;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(
-    classes = {RetryAutoConfiguration.class,
-        AnnotationAwareAspectJAutoProxyCreator.class, SaladsController.class},
+    classes = {RetryAutoConfiguration.class, AnnotationAwareAspectJAutoProxyCreator.class,
+        SaladsController.class},
     properties = {"resilience4j.retry.instances.getSalads.maxRetryAttempts=5",
+        "resilience4j.retry.instances.getSalads.retryExceptions=java.lang.RuntimeException",
         "resilience4j.retry.instances.getSalads.waitDuration=1ms"})
 class SaladsControllerTest {
 
