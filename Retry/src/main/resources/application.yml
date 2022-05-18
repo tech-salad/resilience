@@ -1,0 +1,10 @@
+resilience4j:
+  retry:
+    instances:
+      getSalads:
+        maxRetryAttempts: 2
+        waitDuration: 5s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.lang.IllegalStateException
