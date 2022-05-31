@@ -30,7 +30,7 @@ import io.github.resilience4j.retry.autoconfigure.RetryAutoConfiguration;
         "resilience4j.retry.instances.getSalads.waitDuration=1ms"})
 class SaladsControllerTest {
 
-  private static final RuntimeException RUNTIME_EXCEPTION = new RuntimeException("Zle, nedobre!");
+  private static final RuntimeException RUNTIME_EXCEPTION = new RuntimeException();
 
   @MockBean
   private SaladsService saladsService;
@@ -47,14 +47,14 @@ class SaladsControllerTest {
     final Executable getSalads = () -> saladsController.getSalads();
 
     // then
-    assertThrows(RuntimeException.class, getSalads, "Hmm... tu to malo spadnut!??");
+    assertThrows(RuntimeException.class, getSalads);
     verify(this.saladsService, times(5)).getAllSalads();
   }
 
   @Test
   void testExecuteWithSuccessful3rdAttempt() {
     // given
-    final String expectedSalad = "Najsamlepší šalátik";
+    final String expectedSalad = "The best salad ever";
     when(this.saladsService.getAllSalads()).thenThrow(RUNTIME_EXCEPTION)
         .thenThrow(RUNTIME_EXCEPTION).thenReturn(Collections.singletonList(expectedSalad));
 

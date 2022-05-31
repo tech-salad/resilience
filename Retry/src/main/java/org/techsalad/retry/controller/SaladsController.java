@@ -43,16 +43,17 @@ public class SaladsController {
   }
 
   private void logRetry(final RetryOnRetryEvent event) {
-    log.log(INFO, "Bola by Kucapaca, ale skúsim zopakovať po {0}-krát!",
+    log.log(INFO, "Salads were not received after {0} retries!",
         event.getNumberOfRetryAttempts());
   }
 
   private void logSuccess(final RetryOnSuccessEvent event) {
-    log.log(INFO, "Všetko dobre dopadlo po {0}-pokusoch :)", event.getNumberOfRetryAttempts());
+    log.log(INFO, "Salads were received successfully after {0} retries.",
+        event.getNumberOfRetryAttempts());
   }
 
   private void logError(final RetryOnErrorEvent event) {
-    log.log(WARNING, "Dačo hrozné! Urobilo bác po {0}-pokusoch! :(",
-        event.getNumberOfRetryAttempts());
+    log.log(WARNING, "Salads were not received after {0}-retries and failed on following error : {1}",
+        new Object[]{event.getNumberOfRetryAttempts(), event.getLastThrowable()});
   }
 }

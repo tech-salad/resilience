@@ -13,11 +13,11 @@ public class SaladsService {
   public List<String> getAllSalads() {
     if (failuresCount < 3) {
       failuresCount++;
-      throw new IllegalStateException("Bola kucapaca! Neviem najsť ani jeden šalát. :(");
+      throw new IllegalStateException("Failure occurred during receiving the salads!");
     }
     failuresCount = 0;
 
-    return Collections.singletonList("Najsamlepší šalátik!");
+    return Collections.singletonList("The best salad ever!");
   }
 
 }
