@@ -1,0 +1,39 @@
+plugins {
+	id 'org.springframework.boot' version '2.6.8'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'org.techsalad'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	resilience4jVersion = '1.7.1'
+	springBootVersion = '2.6.7'
+	lombokVersion = '1.18.24'
+}
+
+dependencies {
+	implementation "org.springframework.boot:spring-boot-starter:$springBootVersion"
+	implementation "org.springframework.boot:spring-boot-starter-aop:$springBootVersion" // Without this the retry was not invoked
+	implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+	implementation "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
+
+	implementation "io.github.resilience4j:resilience4j-timelimiter:$resilience4jVersion"
+	implementation "io.github.resilience4j:resilience4j-spring-boot2:$resilience4jVersion" // Without this application will fail to start because of : Parameter 0 of constructor in org.techsalad.retry.controller.SaladsControllers required a bean of type 'io.github.resilience4j.retry.RetryRegistry' that could not be found.
+	implementation "io.github.resilience4j:resilience4j-annotations:$resilience4jVersion" // Without this you can not use annotations, I didn't find it in official page. :(
+
+	compileOnly "org.projectlombok:lombok:$lombokVersion"
+	annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+	testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
