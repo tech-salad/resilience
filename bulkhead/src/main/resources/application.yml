@@ -1,0 +1,28 @@
+resilience4j:
+  timelimiter:
+    instances:
+        getSalads:
+          timeoutDuration: 100ms
+          cancelRunningFuture: false
+
+# https://resilience4j.readme.io/docs/bulkhead#create-and-configure-a-threadpoolbulkhead
+resilience4j.bulkhead:
+  instances:
+    salads:
+      maxWaitDuration: 30s
+      maxConcurrentCalls: 2
+#      coreThreadPoolSize: 1
+#      queueCapacity: 1
+    drinks:
+      maxWaitDuration: 30s
+      maxConcurrentCalls: 2
+#      maxWaitDuration: 10ms
+
+
+
+
+drinks:
+  url: http://localhost:8080/drinks
+
+salads:
+  url: http://localhost:8080/salads
