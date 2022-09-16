@@ -36,7 +36,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
         webEnvironment = WebEnvironment.NONE,
         classes = BulkheadApplication.class
         )
-@AutoConfigureWireMock(port = 0)
 @Slf4j
 class SaladRestClientTest {
 
