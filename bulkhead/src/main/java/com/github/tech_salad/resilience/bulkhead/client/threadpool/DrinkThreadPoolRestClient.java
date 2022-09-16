@@ -4,7 +4,6 @@ import com.github.tech_salad.resilience.bulkhead.client.RestClient;
 import com.github.tech_salad.resilience.bulkhead.config.RestEndpointConfiguration;
 import com.github.tech_salad.resilience.bulkhead.model.Drink;
 import com.github.tech_salad.resilience.bulkhead.model.DrinkList;
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

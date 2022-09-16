@@ -5,7 +5,6 @@ import com.github.tech_salad.resilience.bulkhead.config.RestEndpointConfiguratio
 import com.github.tech_salad.resilience.bulkhead.model.Salad;
 import com.github.tech_salad.resilience.bulkhead.model.SaladList;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

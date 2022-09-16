@@ -5,7 +5,6 @@ import com.github.tech_salad.resilience.bulkhead.config.RestEndpointConfiguratio
 import com.github.tech_salad.resilience.bulkhead.model.Drink;
 import com.github.tech_salad.resilience.bulkhead.model.DrinkList;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
