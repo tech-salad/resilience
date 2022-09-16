@@ -1,16 +1,21 @@
 package com.github.tech_salad.resilience.bulkhead.client;
 
 import com.github.tech_salad.resilience.bulkhead.BulkheadApplication;
-import com.github.tech_salad.resilience.bulkhead.config.RestConfiguration;
+import com.github.tech_salad.resilience.bulkhead.config.RestEndpointConfiguration;
 import com.github.tech_salad.resilience.bulkhead.model.Drink;
 import com.github.tech_salad.resilience.bulkhead.model.Salad;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -19,16 +24,17 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
@@ -38,7 +44,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
         classes = BulkheadApplication.class
         )
 @Slf4j
-class SaladRestClientTest {
+@TestInstance(PER_CLASS) // to enable non-static method referred in @MethodSource
+class RestClientTest {
 
   @RegisterExtension
   static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
@@ -46,13 +53,23 @@ class SaladRestClientTest {
           .build();
 
   @Autowired
-  private RestClient<Drink> drinkRestClient;
+  @Qualifier("drinkR4jClient")
+  private RestClient<Drink> drinkR4jRestClient;
 
   @Autowired
-  private RestClient<Salad> saladRestClient;
+  @Qualifier("saladR4jClient")
+  private RestClient<Salad> saladR4jRestClient;
+
+  @Autowired
+  @Qualifier("drinkThreadPoolClient")
+  private RestClient<Drink> drinkThreadPoolRestClient;
+
+  @Autowired
+  @Qualifier("saladThreadPoolClient")
+  private RestClient<Salad> saladThreadPoolRestClient;
 
   @MockBean
-  private RestConfiguration restConfiguration;
+  private RestEndpointConfiguration restEndpointConfiguration;
 
   private final static int REST_CALL_DURATION_IN_SECONDS = 1;
   private final static int REST_CALL_DURATION_IN_MILIS = REST_CALL_DURATION_IN_SECONDS * 1000;
@@ -61,7 +78,7 @@ class SaladRestClientTest {
   private final static int CALL_OVERHEAD_DURATION = 1;
   @BeforeEach
   public void beforeEach() {
-    when(restConfiguration.getDrinksUrl()).thenReturn("http://127.0.0.1:" + wireMockExtension.getRuntimeInfo().getHttpPort() + "/drinks");
+    when(restEndpointConfiguration.getDrinksUrl()).thenReturn("http://127.0.0.1:" + wireMockExtension.getRuntimeInfo().getHttpPort() + "/drinks");
     wireMockExtension.stubFor(get(urlEqualTo("/drinks"))
             .willReturn(aResponse()
                     .withStatus(200)
@@ -69,7 +86,7 @@ class SaladRestClientTest {
                     .withFixedDelay(REST_CALL_DURATION_IN_MILIS)
                     .withBody(" { \"drinks\" : [ { \"name\" : \"Beer\" } , { \"name\" : \"Wine\" } ] }")));
 
-    when(restConfiguration.getSaladsUrl()).thenReturn("http://127.0.0.1:" + wireMockExtension.getRuntimeInfo().getHttpPort() + "/salads");
+    when(restEndpointConfiguration.getSaladsUrl()).thenReturn("http://127.0.0.1:" + wireMockExtension.getRuntimeInfo().getHttpPort() + "/salads");
     wireMockExtension.stubFor(get(urlEqualTo("/salads"))
             .willReturn(aResponse()
                     .withStatus(200)
@@ -80,8 +97,15 @@ class SaladRestClientTest {
     log.info("Init done");
   }
 
-  @Test
-  void testGetSaladsOnceOK() {
+  private Stream<Arguments> provideArguments() {
+    return Stream.of(
+            Arguments.of(this.drinkR4jRestClient, this.saladR4jRestClient, "resilience4j"),
+            Arguments.of(this.drinkThreadPoolRestClient, this.saladThreadPoolRestClient, "threadpool")
+    );
+  }
+  @ParameterizedTest(name = "[{index}] => {2}")
+  @MethodSource("provideArguments")
+  void testGetSaladsOnceOK(RestClient<Drink> drinkRestClient, RestClient<Salad> saladRestClient, String testId) {
     LocalDateTime startTime = LocalDateTime.now();
 
     // when
@@ -99,12 +123,14 @@ class SaladRestClientTest {
             lessThanOrEqualTo(REST_CALL_DURATION_IN_SECONDS + CALL_OVERHEAD_DURATION));
   }
 
-  @Test
-  void testGetSaladsExceedMaxCapacityPostponesCalls() throws ExecutionException, InterruptedException {
+  @ParameterizedTest(name = "[{index}] => {2}")
+  @MethodSource("provideArguments")
+  @SneakyThrows
+  void testGetSaladsExceedMaxCapacityPostponesCalls(RestClient<Drink> drinkRestClient, RestClient<Salad> saladRestClient, String testId) {
     LocalDateTime startTime = LocalDateTime.now();
 
     // when
-    invokeParallel(saladRestClient, ASYNC_TASKS_COUNT)
+    invokeParallel(saladR4jRestClient, ASYNC_TASKS_COUNT)
             .stream().forEach(CompletableFuture::join);
 
     LocalDateTime endTime = LocalDateTime.now();
@@ -113,6 +139,31 @@ class SaladRestClientTest {
     assertThat("Bulkhead concurrency = 2, so we should not have exceeded time needed for sequential retrieval",
             duration,
             lessThan(ASYNC_TASKS_COUNT * REST_CALL_DURATION_IN_SECONDS));
+    assertThat("Bulkhead concurrency = 2, so we should not have executed all in one shot",
+            duration,
+            greaterThan(REST_CALL_DURATION_IN_SECONDS + CALL_OVERHEAD_DURATION));
+  }
+
+
+  @ParameterizedTest(name = "[{index}] => {2}")
+  @MethodSource("provideArguments")
+  @SneakyThrows
+  void testGetSaladsAndGetDrinksIndependantCalls(RestClient<Drink> drinkRestClient, RestClient<Salad> saladRestClient, String testId) {
+    LocalDateTime startTime = LocalDateTime.now();
+
+    // when
+    Stream.of(
+                    invokeParallel(saladR4jRestClient, ASYNC_TASKS_COUNT / 2),
+                    invokeParallel(drinkR4jRestClient, ASYNC_TASKS_COUNT / 2))
+            .flatMap(List::stream)
+            .forEach(CompletableFuture::join);
+
+    LocalDateTime endTime = LocalDateTime.now();
+    int duration = (int) Duration.between(startTime, endTime).getSeconds();
+
+    assertThat("Bulkhead concurrency = 2, so we should not have exceeded time needed for sequential retrieval",
+            duration,
+            lessThan( 1 + ASYNC_TASKS_COUNT * REST_CALL_DURATION_IN_SECONDS / 4));
     assertThat("Bulkhead concurrency = 2, so we should not have executed all in one shot",
             duration,
             greaterThan(REST_CALL_DURATION_IN_SECONDS + CALL_OVERHEAD_DURATION));
@@ -131,27 +182,5 @@ class SaladRestClientTest {
     }
 
     return futures;
-  }
-
-  @Test
-  void testGetSaladsAndGetDrinksIndependantCalls() throws ExecutionException, InterruptedException {
-    LocalDateTime startTime = LocalDateTime.now();
-
-    // when
-    Stream.of(
-                    invokeParallel(saladRestClient, ASYNC_TASKS_COUNT / 2),
-                    invokeParallel(drinkRestClient, ASYNC_TASKS_COUNT / 2))
-            .flatMap(List::stream)
-            .forEach(CompletableFuture::join);
-
-    LocalDateTime endTime = LocalDateTime.now();
-    int duration = (int) Duration.between(startTime, endTime).getSeconds();
-
-    assertThat("Bulkhead concurrency = 2, so we should not have exceeded time needed for sequential retrieval",
-            duration,
-            lessThan( 1 + ASYNC_TASKS_COUNT * REST_CALL_DURATION_IN_SECONDS / 4));
-    assertThat("Bulkhead concurrency = 2, so we should not have executed all in one shot",
-            duration,
-            greaterThan(REST_CALL_DURATION_IN_SECONDS + CALL_OVERHEAD_DURATION));
   }
 }

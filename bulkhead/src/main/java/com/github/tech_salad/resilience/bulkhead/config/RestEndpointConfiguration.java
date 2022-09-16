@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Data
-public class RestConfiguration {
+public class RestEndpointConfiguration {
 
     @Value("${drinks.url}")
     private String drinksUrl;

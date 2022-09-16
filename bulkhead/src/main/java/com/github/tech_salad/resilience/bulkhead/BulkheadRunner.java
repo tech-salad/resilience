@@ -1,7 +1,7 @@
 package com.github.tech_salad.resilience.bulkhead;
 
-import com.github.tech_salad.resilience.bulkhead.client.DrinkRestClient;
-import com.github.tech_salad.resilience.bulkhead.client.SaladRestClient;
+import com.github.tech_salad.resilience.bulkhead.client.r4j.DrinkR4jRestClient;
+import com.github.tech_salad.resilience.bulkhead.client.r4j.SaladR4jRestClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class BulkheadRunner /*implements CommandLineRunner*/ {
 
-	private DrinkRestClient drinkRestClient;
-	private SaladRestClient saladRestClient;
+	private DrinkR4jRestClient drinkR4jRestClient;
+	private SaladR4jRestClient saladR4jRestClient;
 
 //	@Override
 	public void run(String... args) {
-		saladRestClient.get();
+		saladR4jRestClient.get();
 	}
 
 }
