@@ -130,7 +130,7 @@ class RestClientTest {
     LocalDateTime startTime = LocalDateTime.now();
 
     // when
-    invokeParallel(saladR4jRestClient, ASYNC_TASKS_COUNT)
+    invokeParallel(saladRestClient, ASYNC_TASKS_COUNT)
             .stream().forEach(CompletableFuture::join);
 
     LocalDateTime endTime = LocalDateTime.now();
@@ -153,8 +153,8 @@ class RestClientTest {
 
     // when
     Stream.of(
-                    invokeParallel(saladR4jRestClient, ASYNC_TASKS_COUNT / 2),
-                    invokeParallel(drinkR4jRestClient, ASYNC_TASKS_COUNT / 2))
+                    invokeParallel(saladRestClient, ASYNC_TASKS_COUNT / 2),
+                    invokeParallel(drinkRestClient, ASYNC_TASKS_COUNT / 2))
             .flatMap(List::stream)
             .forEach(CompletableFuture::join);
 
@@ -169,7 +169,7 @@ class RestClientTest {
             greaterThan(REST_CALL_DURATION_IN_SECONDS + CALL_OVERHEAD_DURATION));
   }
 
-  private <T> List<CompletableFuture> invokeParallel(RestClient<T> restClient, int taskCountToSubmit) throws InterruptedException, ExecutionException {
+   <T> List<CompletableFuture> invokeParallel(RestClient<T> restClient, int taskCountToSubmit) throws InterruptedException, ExecutionException {
     List<CompletableFuture> futures = new ArrayList<>();
 
     for (int i = 0; i < taskCountToSubmit; i++) {
