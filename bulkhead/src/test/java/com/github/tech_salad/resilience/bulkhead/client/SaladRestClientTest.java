@@ -6,7 +6,6 @@ import com.github.tech_salad.resilience.bulkhead.model.Drink;
 import com.github.tech_salad.resilience.bulkhead.model.Salad;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import lombok.extern.slf4j.Slf4j;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,16 +20,14 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
@@ -57,11 +54,9 @@ class SaladRestClientTest {
   @MockBean
   private RestConfiguration restConfiguration;
 
-  private ThreadPoolExecutor executor;
-
   private final static int REST_CALL_DURATION_IN_SECONDS = 1;
   private final static int REST_CALL_DURATION_IN_MILIS = REST_CALL_DURATION_IN_SECONDS * 1000;
-  private final static int THREADPOOL_SIZE = 10;
+  private final static int ASYNC_TASKS_COUNT = 10;
 
   @BeforeEach
   public void beforeEach() {
@@ -81,8 +76,6 @@ class SaladRestClientTest {
                     .withFixedDelay(REST_CALL_DURATION_IN_MILIS)
                     .withBody(" { \"salads\" : [ { \"name\" : \"Creamy Vegan Pasta Salad\" } , { \"name\" : \"Shredded Brussels Sprout Salad\" } ] }")));
 
-    executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREADPOOL_SIZE);
-
     log.info("Init done");
   }
 
@@ -101,34 +94,33 @@ class SaladRestClientTest {
     LocalDateTime startTime = LocalDateTime.now();
 
     // when
-    invokeParallel(saladRestClient, true, THREADPOOL_SIZE);
+    invokeParallel(saladRestClient, true, ASYNC_TASKS_COUNT);
 
     LocalDateTime endTime = LocalDateTime.now();
     int duration = (int) Duration.between(startTime, endTime).getSeconds();
 
     assertThat("Bulkhead concurrency = 2, so we should not have exceeded time needed for sequential retrieval",
             duration,
-            Matchers.lessThan(THREADPOOL_SIZE * REST_CALL_DURATION_IN_SECONDS));
+            lessThan(ASYNC_TASKS_COUNT * REST_CALL_DURATION_IN_SECONDS));
     assertThat("Bulkhead concurrency = 2, so we should not have executed all in one shot",
             duration,
-            Matchers.greaterThan(2 * REST_CALL_DURATION_IN_SECONDS));
+            greaterThan(2 * REST_CALL_DURATION_IN_SECONDS));
   }
 
   private <T> void invokeParallel(RestClient<T> restClient, boolean waitForResponses, int taskCountToSubmit) throws InterruptedException, ExecutionException {
-    List<Future<List<T>>> results = new ArrayList<>();
+    List<CompletableFuture> futures = new ArrayList<>();
+
     for (int i = 0; i < taskCountToSubmit; i++) {
-      Future<List<T>> result = executor.submit(() -> {
-        List<T> list = restClient.get();
-        log.info("{}", list);
-        return list;
-      });
-      results.add(result);
+      futures.add(CompletableFuture
+              .supplyAsync(() -> {
+                List<T> list = restClient.get();
+                log.info("{}", list);
+                return list;
+              }));
     }
 
     if(waitForResponses) {
-      for (Future<List<T>> result : results) {
-        result.get();
-      }
+      futures.forEach(CompletableFuture::join);
     }
   }
 
@@ -137,17 +129,17 @@ class SaladRestClientTest {
     LocalDateTime startTime = LocalDateTime.now();
 
     // when
-    invokeParallel(saladRestClient, false, THREADPOOL_SIZE / 2);
-    invokeParallel(drinkRestClient, true, THREADPOOL_SIZE / 2);
+    invokeParallel(saladRestClient, false, ASYNC_TASKS_COUNT / 2);
+    invokeParallel(drinkRestClient, true, ASYNC_TASKS_COUNT / 2);
 
     LocalDateTime endTime = LocalDateTime.now();
     int duration = (int) Duration.between(startTime, endTime).getSeconds();
 
     assertThat("Bulkhead concurrency = 2, so we should not have exceeded time needed for sequential retrieval",
             duration,
-            Matchers.lessThan( THREADPOOL_SIZE * REST_CALL_DURATION_IN_SECONDS));
+            lessThan( ASYNC_TASKS_COUNT * REST_CALL_DURATION_IN_SECONDS));
     assertThat("Bulkhead concurrency = 2, so we should not have executed all in one shot",
             duration,
-            Matchers.greaterThan(2 * REST_CALL_DURATION_IN_SECONDS));
+            greaterThan(2 * REST_CALL_DURATION_IN_SECONDS));
   }
 }
