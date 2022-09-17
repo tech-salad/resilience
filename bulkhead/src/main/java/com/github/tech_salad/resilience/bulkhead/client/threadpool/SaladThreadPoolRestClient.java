@@ -26,7 +26,7 @@ public class SaladThreadPoolRestClient implements RestClient<Salad> {
     @Autowired
     private RestEndpointConfiguration restEndpointConfiguration;
 
-    @Value("${resilience4j.bulkhead.instances.salads.maxConcurrentCalls}")
+    @Value("${resilience4j.bulkhead.configs.default.maxConcurrentCalls}")
     private int poolSize;
 
     private ExecutorService executorService;

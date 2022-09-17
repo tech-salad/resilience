@@ -1,4 +1,4 @@
-package com.github.tech_salad.resilience.bulkhead.client.r4j;
+package com.github.tech_salad.resilience.bulkhead.client.r4jsemaphore;
 
 import com.github.tech_salad.resilience.bulkhead.client.RestClient;
 import com.github.tech_salad.resilience.bulkhead.config.RestEndpointConfiguration;
@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component("drinkR4jClient")
-public class DrinkR4jRestClient implements RestClient<Drink> {
+public class DrinkR4jSemaphoreRestClient implements RestClient<Drink> {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -23,6 +23,7 @@ public class DrinkR4jRestClient implements RestClient<Drink> {
 
 
     @Bulkhead(name = "drinks", type = Bulkhead.Type.SEMAPHORE)
+    @Override
     public List<Drink> get() {
         DrinkList drinks = restTemplate.getForObject(restEndpointConfiguration.getDrinksUrl(), DrinkList.class);
         return (drinks != null) ? drinks.getDrinks() : Collections.emptyList();

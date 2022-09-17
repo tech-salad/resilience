@@ -26,7 +26,7 @@ public class DrinkThreadPoolRestClient implements RestClient<Drink> {
     @Autowired
     private RestEndpointConfiguration restEndpointConfiguration;
 
-    @Value("${resilience4j.bulkhead.instances.drinks.maxConcurrentCalls}")
+    @Value("${resilience4j.bulkhead.configs.default.maxConcurrentCalls}")
     private int poolSize;
 
     private ExecutorService executorService;

@@ -61,6 +61,14 @@ class RestClientTest {
   private RestClient<Salad> saladR4jRestClient;
 
   @Autowired
+  @Qualifier("drinkR4jThreadPoolClient")
+  private RestClient<Drink> drinkR4jThreadPoolRestClient;
+
+  @Autowired
+  @Qualifier("saladR4jThreadPoolClient")
+  private RestClient<Salad> saladR4jThreadPoolRestClient;
+
+  @Autowired
   @Qualifier("drinkThreadPoolClient")
   private RestClient<Drink> drinkThreadPoolRestClient;
 
@@ -99,7 +107,8 @@ class RestClientTest {
 
   private Stream<Arguments> provideArguments() {
     return Stream.of(
-            Arguments.of(this.drinkR4jRestClient, this.saladR4jRestClient, "resilience4j"),
+            Arguments.of(this.drinkR4jRestClient, this.saladR4jRestClient, "resilience4j-semaphore"),
+            Arguments.of(this.drinkR4jThreadPoolRestClient, this.saladR4jThreadPoolRestClient, "resilience4j-threadpool"),
             Arguments.of(this.drinkThreadPoolRestClient, this.saladThreadPoolRestClient, "threadpool")
     );
   }
