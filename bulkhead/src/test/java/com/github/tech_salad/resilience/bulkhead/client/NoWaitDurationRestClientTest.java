@@ -68,7 +68,7 @@ public class NoWaitDurationRestClientTest {
         Exception thrown = assertThrows(CompletionException.class, () -> {
             // when
             RestClientTest.invokeParallel(saladR4jRestClient, ASYNC_TASKS_COUNT)
-                    .stream().forEach(CompletableFuture::join);
+                    .forEach(CompletableFuture::join);
 
         }, "Bulkhead 'salads' is full and does not permit further calls");
 

@@ -140,7 +140,7 @@ class RestClientTest {
 
     // when
     invokeParallel(saladRestClient, ASYNC_TASKS_COUNT)
-            .stream().forEach(CompletableFuture::join);
+            .forEach(CompletableFuture::join);
 
     LocalDateTime endTime = LocalDateTime.now();
     int duration = (int) Duration.between(startTime, endTime).getSeconds();
