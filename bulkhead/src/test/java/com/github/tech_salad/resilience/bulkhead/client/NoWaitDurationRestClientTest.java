@@ -5,7 +5,6 @@ import com.github.tech_salad.resilience.bulkhead.config.RestEndpointConfiguratio
 import com.github.tech_salad.resilience.bulkhead.model.Salad;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,12 +63,11 @@ public class NoWaitDurationRestClientTest {
     @Qualifier("saladR4jClient")
     private RestClient<Salad> saladR4jRestClient;
 
-    @SneakyThrows
     @Test
     void testMaxWaitDurationExceeded() {
         Exception thrown = assertThrows(CompletionException.class, () -> {
             // when
-            new RestClientTest().invokeParallel(saladR4jRestClient, ASYNC_TASKS_COUNT)
+            RestClientTest.invokeParallel(saladR4jRestClient, ASYNC_TASKS_COUNT)
                     .stream().forEach(CompletableFuture::join);
 
         }, "Bulkhead 'salads' is full and does not permit further calls");

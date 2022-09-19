@@ -5,7 +5,6 @@ import com.github.tech_salad.resilience.bulkhead.config.RestEndpointConfiguratio
 import com.github.tech_salad.resilience.bulkhead.model.Drink;
 import com.github.tech_salad.resilience.bulkhead.model.Salad;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
@@ -135,7 +134,6 @@ class RestClientTest {
 
   @ParameterizedTest(name = "[{index}] => {2}")
   @MethodSource("provideArguments")
-  @SneakyThrows
   void testGetSaladsExceedMaxCapacityPostponesCalls(RestClient<Drink> drinkRestClient, RestClient<Salad> saladRestClient, String testId) {
     LocalDateTime startTime = LocalDateTime.now();
 
@@ -157,7 +155,6 @@ class RestClientTest {
 
   @ParameterizedTest(name = "[{index}] => {2}")
   @MethodSource("provideArguments")
-  @SneakyThrows
   void testGetSaladsAndGetDrinksIndependantCalls(RestClient<Drink> drinkRestClient, RestClient<Salad> saladRestClient, String testId) {
     LocalDateTime startTime = LocalDateTime.now();
 
@@ -179,7 +176,7 @@ class RestClientTest {
             greaterThan(REST_CALL_DURATION_IN_SECONDS + CALL_OVERHEAD_DURATION));
   }
 
-   <T> List<CompletableFuture> invokeParallel(RestClient<T> restClient, int taskCountToSubmit) throws InterruptedException, ExecutionException {
+  static <T> List<CompletableFuture> invokeParallel(RestClient<T> restClient, int taskCountToSubmit) {
     return Stream.generate(
             () -> CompletableFuture.supplyAsync(() -> {
               List<T> list = restClient.get();
