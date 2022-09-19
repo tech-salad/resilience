@@ -1,0 +1,55 @@
+spring:
+  application.name: resilience4j-demo
+
+server:
+  port: 8080
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  health:
+   circuitbreakers:
+     enabled: true
+   ratelimiters:
+     enabled: true
+
+resilience4j.circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 2
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.lang.IllegalStateException
+    instances:
+      tunaCircuitBreaker:
+        baseConfig: default
+      ceasarCircuitBreaker:
+        registerHealthIndicator: true
+        sliding-window-type: time_based
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 2
+        slow-call-duration-threshold: 1
+        slow-call-rate-threshold: 1
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        record-exceptions:
+          - java.lang.IllegalStateException
+
+resilience4j.ratelimiter:
+  instances:
+    fruitRateLimiter:
+      limitForPeriod: 2
+      limitRefreshPeriod: 500ms
+      timeoutDuration: 1
+      registerHealthIndicator: true
