@@ -1,13 +1,11 @@
-package org.techsalad.timeout;
+package com.github.tech_salad.resilience.bulkhead;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TimeoutApplication {
-
+public class BulkheadApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(TimeoutApplication.class, args);
+		SpringApplication.run(BulkheadApplication.class, args);
 	}
-
 }
