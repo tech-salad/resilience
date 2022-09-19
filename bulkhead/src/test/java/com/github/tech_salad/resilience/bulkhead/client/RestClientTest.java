@@ -82,6 +82,7 @@ class RestClientTest {
   private final static int REST_CALL_DURATION_IN_SECONDS = 1;
   private final static int REST_CALL_DURATION_IN_MILIS = REST_CALL_DURATION_IN_SECONDS * 1000;
   private final static int ASYNC_TASKS_COUNT = 12;
+  public static final int MAX_DURATION_OF_PARALLEL_SALADS_AND_DRINKS_RETRIEVAL = 1 + ASYNC_TASKS_COUNT * REST_CALL_DURATION_IN_SECONDS / 4;
 
   private final static int CALL_OVERHEAD_DURATION = 1;
   @BeforeEach
@@ -170,7 +171,7 @@ class RestClientTest {
 
     assertThat("Bulkhead concurrency = 2, so we should not have exceeded time needed for sequential retrieval",
             duration,
-            lessThan( 1 + ASYNC_TASKS_COUNT * REST_CALL_DURATION_IN_SECONDS / 4));
+            lessThan(MAX_DURATION_OF_PARALLEL_SALADS_AND_DRINKS_RETRIEVAL));
     assertThat("Bulkhead concurrency = 2, so we should not have executed all in one shot",
             duration,
             greaterThan(REST_CALL_DURATION_IN_SECONDS + CALL_OVERHEAD_DURATION));
