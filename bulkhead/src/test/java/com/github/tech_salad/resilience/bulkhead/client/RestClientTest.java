@@ -179,17 +179,13 @@ class RestClientTest {
   }
 
    <T> List<CompletableFuture> invokeParallel(RestClient<T> restClient, int taskCountToSubmit) throws InterruptedException, ExecutionException {
-    List<CompletableFuture> futures = new ArrayList<>();
-
-    for (int i = 0; i < taskCountToSubmit; i++) {
-      futures.add(CompletableFuture
-              .supplyAsync(() -> {
-                List<T> list = restClient.get();
-                log.info("{}", list);
-                return list;
-              }));
-    }
-
-    return futures;
+    return Stream.generate(
+            () -> CompletableFuture.supplyAsync(() -> {
+              List<T> list = restClient.get();
+              log.info("{}", list);
+              return list;
+            }))
+            .limit(taskCountToSubmit)
+            .collect(Collectors.toList());
   }
 }
