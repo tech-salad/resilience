@@ -8,21 +8,21 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Log4j2
-public class CeasarSaladService implements SaladService {
+public class CaesarSaladService implements SaladService {
 
-    @CircuitBreaker(name = "ceasarCircuitBreaker")
+    @CircuitBreaker(name = "caesarCircuitBreaker")
     @Override
     public String saladType() {
-        return "Ceasar salad!";
+        return "Caesar salad!";
     }
 
-    @CircuitBreaker(name = "ceasarCircuitBreaker")
+    @CircuitBreaker(name = "caesarCircuitBreaker")
     @Override
     public String dressingType() {
         return  "Olive oil!";
     }
 
-    @CircuitBreaker(name = "ceasarCircuitBreaker", fallbackMethod = "orderFallback")
+    @CircuitBreaker(name = "caesarCircuitBreaker", fallbackMethod = "orderFallback")
     @Override
     public String summarizeOrder(){
         try {
@@ -31,10 +31,10 @@ public class CeasarSaladService implements SaladService {
             log.error(e);
             throw new RuntimeException(e);
         }
-        return "Ceasar salad with olive oil!";
+        return "Caesar salad with olive oil!";
     }
 
     public String orderFallback(Exception ex){
-        return "Fallback: Ceasar salad with olive oil!";
+        return "Fallback: Caesar salad with olive oil!";
     }
 }

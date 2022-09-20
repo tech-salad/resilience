@@ -14,6 +14,7 @@ public class FruitSaladService implements SaladService {
     @RateLimiter(name = "fruitRateLimiter", fallbackMethod = "dressingFallback")
     @Override
     public String dressingType() {
+        System.out.println("Maple sirup!");
         return "Maple sirup!";
     }
 

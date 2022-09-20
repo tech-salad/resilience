@@ -16,14 +16,14 @@ import java.util.stream.IntStream;
 public class SaladController {
 
     private final SaladService tunaSaladService;
-    private final SaladService ceasarSaladService;
+    private final SaladService caesarSaladService;
     private final SaladService fruitSaladService;
 
     @GetMapping(path = "salad/{type}")
     public String salad(@PathVariable(name = "type") final SaladEnum salad){
         switch (salad){
             case TUNA: return this.tunaSaladService.saladType();
-            case CEASAR: return this.ceasarSaladService.saladType();
+            case CAESAR: return this.caesarSaladService.saladType();
             case FRUIT: return this.fruitSaladService.saladType();
             default: return "Salad does not exist!";
         }
@@ -33,7 +33,7 @@ public class SaladController {
     public String drink(@PathVariable(name = "type") final SaladEnum salad){
         switch (salad){
             case TUNA: return this.tunaSaladService.dressingType();
-            case CEASAR: return this.ceasarSaladService.dressingType();
+            case CAESAR: return this.caesarSaladService.dressingType();
             case FRUIT:
                 IntStream.range(0,10).forEach(value -> this.fruitSaladService.dressingType());
                 return this.fruitSaladService.dressingType();
@@ -45,7 +45,7 @@ public class SaladController {
     public String order(@PathVariable(name = "type") final SaladEnum salad){
         switch (salad){
             case TUNA: return this.tunaSaladService.summarizeOrder();
-            case CEASAR: return this.ceasarSaladService.summarizeOrder();
+            case CAESAR: return this.caesarSaladService.summarizeOrder();
             case FRUIT: return this.fruitSaladService.summarizeOrder();
             default: return "Could not process order!";
         }
