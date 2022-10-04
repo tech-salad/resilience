@@ -1,0 +1,9 @@
+drinks:
+  url: http://localhost:8080/drinks
+
+salads:
+  url: http://localhost:8080/salads
+
+
+# log all the cache-related activity
+logging.level.org.springframework.cache: TRACE
