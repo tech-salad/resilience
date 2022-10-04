@@ -10,7 +10,7 @@ public interface RestClient<T> {
 
     List<T> saveAll(List<T> drinks);
 
-    Drink save(Drink drink);
+    T save(T drink);
 
-    Drink get(String name);
+    T get(String name);
 }
