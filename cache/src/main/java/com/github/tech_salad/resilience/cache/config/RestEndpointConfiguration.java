@@ -11,6 +11,4 @@ public class RestEndpointConfiguration {
     @Value("${drinks.url}")
     private String drinksUrl;
 
-    @Value("${salads.url}")
-    private String saladsUrl;
 }

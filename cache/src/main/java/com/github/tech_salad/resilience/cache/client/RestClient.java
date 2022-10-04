@@ -1,7 +1,5 @@
 package com.github.tech_salad.resilience.cache.client;
 
-import com.github.tech_salad.resilience.cache.model.Drink;
-
 import java.util.List;
 
 public interface RestClient<T> {
