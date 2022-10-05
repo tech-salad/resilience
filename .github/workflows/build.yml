@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      matrix: { dir: [ './bulkhead', './Retry', './Timeout' ] }
+      matrix: { dir: [ './bulkhead', './cache' , './circuitbreaker-ratelimiter', './Retry', './Timeout' ] }
 
     steps:
       - uses: actions/checkout@v2

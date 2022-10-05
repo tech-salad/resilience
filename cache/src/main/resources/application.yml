@@ -1,0 +1,5 @@
+drinks:
+  url: http://localhost:8080/drinks
+
+# log all the cache-related activity
+logging.level.org.springframework.cache: TRACE
