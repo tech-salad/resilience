@@ -1,0 +1,30 @@
+client:
+  feign:
+    url: http://localhost:8080/feign
+
+feign:
+  client:
+    config:
+      saladFeignClient:
+        connect-timeout: 10000
+        read-timeout: 10000
+        logger-level: FULL
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      registerHealthIndicator: true
+      slidingWindowSize: 10
+      minimumNumberOfCalls: 2
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 50
+      recordExceptions:
+        - org.techsalad.feign.exception.DressingException
+  instances:
+    feignCircuitBreaker:
+      baseConfig: default
+
+server:
+  port: 8090
