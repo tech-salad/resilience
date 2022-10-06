@@ -23,8 +23,8 @@ public class SaladsController {
 
   private final SaladsService saladsService;
 
-  @Value("${techsalad.waitDuration}")
-  private Duration waitDuration;
+  @Value("${resilience4j.timelimiter.instances.getSalads.timeoutDuration}")
+  private Duration timeoutDuration;
 
   @GetMapping("/salads")
   public List<String> getSalads() {
@@ -35,10 +35,10 @@ public class SaladsController {
     }
   }
 
-  @GetMapping("/salad/types")
-  public List<String> getSaladsTypes() {
+  @GetMapping("/dressings")
+  public List<String> getDressings() {
     try {
-      return saladsService.getSaladTypes().get(waitDuration.toMillis(), TimeUnit.MILLISECONDS);
+      return saladsService.getAllDressings().get(timeoutDuration.toMillis(), TimeUnit.MILLISECONDS);
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     } catch (TimeoutException e) {

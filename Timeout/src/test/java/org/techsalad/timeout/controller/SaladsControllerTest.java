@@ -56,7 +56,7 @@ class SaladsControllerTest {
     final List<String> salads = saladsController.getSalads();
 
     // then
-    assertEquals("The best salad ever!", salads.get(0));
+    assertEquals("Ceasar", salads.get(0));
   }
 
 }

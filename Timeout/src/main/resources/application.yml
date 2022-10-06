@@ -1,15 +1,15 @@
 techsalad:
-  waitDuration: 500ms
+  waitDuration: 2s
 
 resilience4j:
   timelimiter:
     instances:
         getSalads:
-          timeoutDuration: 100ms
+          timeoutDuration: 1100ms
           cancelRunningFuture: false
 
 management:
   endpoints:
     web:
       exposure:
-        include: "health,info,metrics,timelimiters,timelimiterevents"
+        include: "timelimiters,timelimiterevents"

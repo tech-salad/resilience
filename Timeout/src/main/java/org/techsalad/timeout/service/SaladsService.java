@@ -34,9 +34,16 @@ public class SaladsService {
   @Value("${techsalad.waitDuration}")
   private Duration waitDuration;
 
-  public CompletableFuture<List<String>> getSaladTypes() {
-    return CompletableFuture.supplyAsync(() -> Arrays.asList("Ceasar", "Caprese"));
+  public CompletableFuture<List<String>> getAllDressings() {
+    return CompletableFuture.supplyAsync(this::getDressings);
   }
+
+  private List<String> getDressings() {
+    waitMillis(waitDuration.toMillis());
+
+    return Arrays.asList("Avocado cilantro", "Greek yogurt");
+  }
+
   @TimeLimiter(name = SALADS_TIME_LIMITER_NAME)
   public CompletableFuture<List<String>> getAllSalads() {
     return CompletableFuture.supplyAsync(this::getSalads);
@@ -45,7 +52,7 @@ public class SaladsService {
   private List<String> getSalads() {
     waitMillis(waitDuration.toMillis());
 
-    return Collections.singletonList("The best salad ever!");
+    return Arrays.asList("Ceasar", "Caprese");
   }
 
   private void waitMillis(long milliseconds) {
